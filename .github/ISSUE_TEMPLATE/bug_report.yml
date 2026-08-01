@@ -1,0 +1,44 @@
+name: Сообщить об ошибке
+description: Помогите воспроизвести проблему в AlikDrone Hub
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо за отчёт. Не публикуйте серийные номера, координаты, SSID, IP/MAC, токены и личные файлы.
+  - type: input
+    id: controller
+    attributes:
+      label: Модель пульта
+      placeholder: DJI RC 2
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Версия AlikDrone Hub
+      placeholder: 1.5.17-github
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Шаги воспроизведения
+      description: Что нажали, что ожидали и что произошло фактически?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Скриншоты или очищенный отчёт
+      description: Проверьте, что вложения не содержат личных данных.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Проверка приватности
+      options:
+        - label: Я проверил вложения и удалил личные данные.
+          required: true
+

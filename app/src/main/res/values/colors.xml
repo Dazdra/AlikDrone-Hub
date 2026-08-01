@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background">#050A0F</color>
+    <color name="surface">#0A121C</color>
+    <color name="surface_variant">#101B28</color>
+    <color name="surface_raised">#142232</color>
+    <color name="brand">#2DD4BF</color>
+    <color name="brand_pressed">#18A996</color>
+    <color name="brand_dark">#062A27</color>
+    <color name="stroke">#26384D</color>
+    <color name="text_primary">#F8FAFC</color>
+    <color name="text_secondary">#A9B8CC</color>
+    <color name="text_muted">#8798AE</color>
+    <color name="status_missing">#FF6B6B</color>
+    <color name="status_success">#45D483</color>
+    <color name="status_warning">#F5C451</color>
+    <color name="category_flight">#2DD4BF</color>
+    <color name="category_communication">#58A6FF</color>
+    <color name="category_maps_weather">#45D483</color>
+    <color name="category_media_streaming">#C084FC</color>
+    <color name="category_files_tools">#F5C451</color>
+    <color name="category_other">#8798AE</color>
+    <color name="warning_surface">#2A1217</color>
+    <color name="warning_stroke">#A94450</color>
+    <color name="progress_track">#213247</color>
+    <color name="donation_yellow">#FFDD2D</color>
+    <color name="donation_yellow_pressed">#E8C91F</color>
+    <color name="donation_text">#101820</color>
+</resources>

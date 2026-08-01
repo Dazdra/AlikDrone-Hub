@@ -1,0 +1,111 @@
+import java.util.Properties
+
+plugins {
+    id "com.android.application"
+}
+
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+def hasReleaseKeystore = keystorePropertiesFile.exists()
+if (hasReleaseKeystore) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+
+android {
+    namespace "ru.alikdrone.hub"
+    compileSdk 30
+
+    defaultConfig {
+        applicationId "ru.alikdrone.hub"
+        minSdk 23
+        targetSdk 30
+        versionCode 32
+        versionName "1.5.17"
+    }
+
+    if (hasReleaseKeystore) {
+        signingConfigs {
+            release {
+                storeFile rootProject.file(keystoreProperties["storeFile"])
+                storePassword keystoreProperties["storePassword"]
+                keyAlias keystoreProperties["keyAlias"]
+                keyPassword keystoreProperties["keyPassword"]
+                enableV1Signing true
+                enableV2Signing true
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            versionNameSuffix "-debug"
+        }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            if (hasReleaseKeystore) {
+                signingConfig signingConfigs.release
+            }
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+        }
+        github {
+            initWith release
+            versionNameSuffix "-github"
+            // The public APK remains installable for local verification even
+            // when the private release keystore is intentionally unavailable.
+            signingConfig hasReleaseKeystore
+                    ? signingConfigs.release
+                    : signingConfigs.debug
+            matchingFallbacks = ["release"]
+        }
+    }
+
+    sourceSets {
+        // Every build type in the public repository uses the same reduced
+        // mirror catalog. The full subscriber catalog is not published.
+        debug.java.srcDir "src/github/java"
+        release.java.srcDir "src/github/java"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    buildFeatures {
+        buildConfig false
+    }
+
+    testOptions {
+        unitTests.includeAndroidResources = true
+    }
+
+    // Hub is sideloaded onto the RC 2 and intentionally targets its Android
+    // generation instead of Google Play's current publication requirement.
+    lint {
+        disable "ExpiredTargetSdkVersion", "GradleDependency"
+    }
+
+    packaging {
+        resources {
+            excludes += [
+                    "META-INF/DEPENDENCIES",
+                    "META-INF/LICENSE",
+                    "META-INF/LICENSE.txt",
+                    "META-INF/NOTICE",
+                    "META-INF/NOTICE.txt"
+            ]
+        }
+    }
+}
+
+dependencies {
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.robolectric:robolectric:4.13"
+}
+
+dependencyLocking {
+    lockAllConfigurations()
+    lockMode = LockMode.STRICT
+}

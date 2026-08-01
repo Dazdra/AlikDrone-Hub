@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="switcher_content_description">Развернуть или свернуть AlikDrone Taskbar</string>
+    <string name="switcher_channel_name">AlikDrone Taskbar</string>
+    <string name="switcher_channel_description">Показывает панель установленных приложений поверх экрана</string>
+    <string name="switcher_notification_title">AlikDrone Taskbar включён</string>
+    <string name="switcher_notification_text">Нажмите AD, чтобы открыть панель приложений</string>
+    <string name="switcher_notification_stop">Отключить</string>
+    <string name="switcher_open_app">Открыть %1$s</string>
+    <string name="switcher_app_unavailable">%1$s больше недоступно</string>
+    <string name="switcher_app_launch_failed">Не удалось открыть %1$s</string>
+</resources>

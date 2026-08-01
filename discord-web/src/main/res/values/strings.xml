@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Discord Web</string>
+    <string name="screen_title">Discord Web</string>
+    <string name="status_opening">Открываю Discord в браузере…</string>
+    <string name="status_return_hint">Discord открыт в браузере. Нажмите кнопку, чтобы открыть его снова.</string>
+    <string name="status_no_browser">Не удалось открыть ссылку. Установите браузер и повторите попытку.</string>
+    <string name="action_open">Открыть Discord</string>
+    <string name="disclaimer">Ярлык AlikDrone для веб-версии Discord. Это не официальное приложение Discord.</string>
+</resources>

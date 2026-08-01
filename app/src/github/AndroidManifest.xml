@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Remove only apps excluded from the public catalog. -->
+    <queries>
+        <package
+            android:name="ru.alikdrone.discordweb"
+            tools:node="remove" />
+        <package
+            android:name="info.dvkr.screenstream"
+            tools:node="remove" />
+        <package
+            android:name="com.asdoi.quicktiles"
+            tools:node="remove" />
+        <package
+            android:name="io.livekit.android.compose.meet"
+            tools:node="remove" />
+    </queries>
+</manifest>
