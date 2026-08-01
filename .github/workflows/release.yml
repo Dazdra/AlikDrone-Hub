@@ -1,0 +1,216 @@
+name: Signed beta release
+
+on:
+  push:
+    tags:
+      - "v*-beta"
+
+permissions:
+  attestations: write
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the tagged commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@d7793b545071e98d581d3bf084a51c3213318a07 # v4.9.0
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+
+      - name: Prepare release signing
+        shell: bash
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          required_secrets=(
+            SIGNING_KEYSTORE_BASE64
+            SIGNING_STORE_PASSWORD
+            SIGNING_KEY_ALIAS
+            SIGNING_KEY_PASSWORD
+          )
+          for secret_name in "${required_secrets[@]}"; do
+            if [[ -z "${!secret_name:-}" ]]; then
+              echo "::error::Required repository secret is missing: ${secret_name}"
+              exit 1
+            fi
+          done
+
+          keystore_path="${RUNNER_TEMP}/alikdrone-release.jks"
+          printf '%s' "${SIGNING_KEYSTORE_BASE64}" | base64 --decode > "${keystore_path}"
+          if [[ ! -s "${keystore_path}" ]]; then
+            echo "::error::The decoded signing keystore is empty"
+            exit 1
+          fi
+          chmod 600 "${keystore_path}"
+
+          {
+            printf 'storeFile=%s\n' "${keystore_path}"
+            printf 'storePassword=%s\n' "${SIGNING_STORE_PASSWORD}"
+            printf 'keyAlias=%s\n' "${SIGNING_KEY_ALIAS}"
+            printf 'keyPassword=%s\n' "${SIGNING_KEY_PASSWORD}"
+          } > keystore.properties
+          chmod 600 keystore.properties
+
+      - name: Test, lint, and assemble the signed public APK
+        shell: bash
+        run: ./gradlew --no-daemon testGithubUnitTest lintGithub assembleGithub
+
+      - name: Package release assets
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tag="${GITHUB_REF_NAME}"
+          if [[ ! "${tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-beta$ ]]; then
+            echo "::error::Release tag must match v<major>.<minor>.<patch>-beta"
+            exit 1
+          fi
+
+          version="${tag#v}"
+          display_version="${version%-beta} BETA"
+          tag_commit="$(git rev-parse "refs/tags/${tag}^{commit}")"
+          workflow_commit="$(git rev-parse "${GITHUB_SHA}^{commit}")"
+          if [[ "${tag_commit}" != "${workflow_commit}" ]]; then
+            echo "::error::The workflow commit does not match the pushed tag"
+            exit 1
+          fi
+
+          dist_dir="${RUNNER_TEMP}/alikdrone-release-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          apk_name="AlikDrone-Hub-${version}.apk"
+          source_name="AlikDrone-Hub-${version}-source.zip"
+          apk_input="app/build/outputs/apk/github/app-github.apk"
+          mkdir -p "${dist_dir}"
+
+          aapt_bin="$(find "${ANDROID_SDK_ROOT}/build-tools" -type f -name aapt -print | sort -V | tail -n 1)"
+          apksigner_bin="$(find "${ANDROID_SDK_ROOT}/build-tools" -type f -name apksigner -print | sort -V | tail -n 1)"
+          if [[ -z "${aapt_bin}" || -z "${apksigner_bin}" ]]; then
+            echo "::error::Android build-tools verification utilities are unavailable"
+            exit 1
+          fi
+
+          badging="$("${aapt_bin}" dump badging "${apk_input}")"
+          package_name="$(sed -n "s/^package: name='\([^']*\)'.*/\1/p" <<< "${badging}" | head -n 1)"
+          version_name="$(sed -n "s/^package:.*versionName='\([^']*\)'.*/\1/p" <<< "${badging}" | head -n 1)"
+          if [[ "${package_name}" != "ru.alikdrone.hub" || "${version_name}" != "${version}" ]]; then
+            echo "::error::APK identity mismatch: package=${package_name}, version=${version_name}, expected=${version}"
+            exit 1
+          fi
+
+          signature_report="$("${apksigner_bin}" verify --verbose --print-certs "${apk_input}")"
+          signer_sha256="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' <<< "${signature_report}" | tr -d ':' | tr '[:upper:]' '[:lower:]' | head -n 1)"
+          expected_signer_sha256="80a529fb8d536302b76c272bdf9901ee128620845e0aa12ab49b716ae914bb9e"
+          if [[ "${signer_sha256}" != "${expected_signer_sha256}" ]]; then
+            echo "::error::Unexpected APK signing certificate: ${signer_sha256}"
+            exit 1
+          fi
+
+          install -m 0644 "${apk_input}" "${dist_dir}/${apk_name}"
+          git archive \
+            --format=zip \
+            --prefix="AlikDrone-Hub-${version}/" \
+            --output="${dist_dir}/${source_name}" \
+            "${tag_commit}"
+
+          (
+            cd "${dist_dir}"
+            sha256sum "${apk_name}" "${source_name}" > SHA256SUMS.txt
+            sha256sum --check SHA256SUMS.txt
+          )
+
+          {
+            echo "version=${version}"
+            echo "display_version=${display_version}"
+            echo "dist_dir=${dist_dir}"
+            echo "apk_name=${apk_name}"
+            echo "source_name=${source_name}"
+            echo "apk_path=${dist_dir}/${apk_name}"
+            echo "source_path=${dist_dir}/${source_name}"
+            echo "checksums_path=${dist_dir}/SHA256SUMS.txt"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Upload release bundle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: AlikDrone-Hub-${{ steps.package.outputs.version }}
+          path: |
+            ${{ steps.package.outputs.apk_path }}
+            ${{ steps.package.outputs.source_path }}
+            ${{ steps.package.outputs.checksums_path }}
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Attest APK build provenance
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: ${{ steps.package.outputs.apk_path }}
+
+      - name: Create or update the prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ steps.package.outputs.version }}
+          RELEASE_DISPLAY_VERSION: ${{ steps.package.outputs.display_version }}
+          DIST_DIR: ${{ steps.package.outputs.dist_dir }}
+          APK_NAME: ${{ steps.package.outputs.apk_name }}
+          SOURCE_NAME: ${{ steps.package.outputs.source_name }}
+        run: |
+          set -euo pipefail
+
+          assets=(
+            "${DIST_DIR}/${APK_NAME}"
+            "${DIST_DIR}/${SOURCE_NAME}"
+            "${DIST_DIR}/SHA256SUMS.txt"
+          )
+
+          notes_file="docs/release-notes/${GITHUB_REF_NAME}.md"
+          if [[ ! -f "${notes_file}" ]]; then
+            echo "::error::Release notes file is missing: ${notes_file}"
+            exit 1
+          fi
+
+          if gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            gh release upload "${GITHUB_REF_NAME}" "${assets[@]}" \
+              --clobber \
+              --repo "${GITHUB_REPOSITORY}"
+            gh release edit "${GITHUB_REF_NAME}" \
+              --draft=false \
+              --prerelease \
+              --title "AlikDrone Hub ${RELEASE_DISPLAY_VERSION}" \
+              --notes-file "${notes_file}" \
+              --repo "${GITHUB_REPOSITORY}"
+          else
+            gh release create "${GITHUB_REF_NAME}" "${assets[@]}" \
+              --notes-file "${notes_file}" \
+              --prerelease \
+              --title "AlikDrone Hub ${RELEASE_DISPLAY_VERSION}" \
+              --verify-tag \
+              --repo "${GITHUB_REPOSITORY}"
+          fi
+
+      - name: Remove signing material
+        if: always()
+        shell: bash
+        run: |
+          rm -f -- keystore.properties "${RUNNER_TEMP}/alikdrone-release.jks"

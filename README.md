@@ -4,6 +4,8 @@
 [![GitHub release](https://img.shields.io/github/v/release/Dazdra/AlikDrone-Hub?include_prereleases&label=BETA)](https://github.com/Dazdra/AlikDrone-Hub/releases)
 [![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 
+**[Скачать APK](https://github.com/Dazdra/AlikDrone-Hub/releases/tag/v1.5.18-beta) · [Установка](docs/INSTALL.md) · [Решение проблем](docs/TROUBLESHOOTING.md) · [Разрешения](docs/PERMISSIONS.md) · [Поддержка](SUPPORT.md)**
+
 **AlikDrone Hub** — бесплатный центр приложений, Taskbar и инструментов пилота для пультов DJI на Android. Работает без root, не изменяет DJI Fly и передаёт установку штатному Android Package Installer с обязательным подтверждением пользователя.
 
 > **Статус: BETA.** Версия уже протестирована на трёх моделях пультов, но обратная связь и отчёты об ошибках приветствуются.
@@ -30,12 +32,38 @@
 
 ## Скачать и установить
 
-1. Откройте [Releases](https://github.com/Dazdra/AlikDrone-Hub/releases) и скачайте APK из последнего BETA-релиза.
-2. Скопируйте файл на microSD или во внутреннюю память пульта.
-3. Откройте APK на пульте и подтвердите установку в штатном окне Android.
-4. Если Android запрещает установку, следуйте [пошаговой инструкции AlikDrone](https://alik-drone.ru/).
+Обычному пользователю нужен файл **`AlikDrone-Hub-1.5.18-beta.apk`** из [релиза v1.5.18-beta](https://github.com/Dazdra/AlikDrone-Hub/releases/tag/v1.5.18-beta). Файлы `Source code` и `*-source.zip` предназначены для разработчиков и на пульт не устанавливаются.
 
-Текущий APK подписан тестовым Android-ключом и публикуется как BETA. Перед обновлением сборки с другой подписью Android может потребовать удалить предыдущую версию.
+### Если установка APK на пульте уже работает
+
+1. Скачайте APK Hub из GitHub Release.
+2. Скопируйте его в папку `Download` на microSD.
+3. Вставьте карту в пульт, откройте APK через файловый менеджер и подтвердите установку в штатном окне Android.
+
+### Если пульт сброшен или пишет «этому пользователю не разрешено устанавливать приложения»
+
+1. Скачайте [системный установщик для RC 2](https://alik-drone.ru/rc2/alikdrone-rc2-installer.apk) и APK Hub из GitHub Release.
+2. Скопируйте оба APK в папку `Download` на microSD.
+3. На пульте сначала откройте и установите системный установщик, затем — AlikDrone Hub.
+
+Системный установщик не является частью этого GPL-репозитория. Полный порядок действий, разрешения Android и проверка результата описаны в **[пошаговой инструкции](docs/INSTALL.md)** и на [странице AlikDrone Hub](https://alik-drone.ru/hub/).
+
+Начиная с `1.5.18-beta`, публичные релизы подписываются постоянным ключом AlikDrone Hub. Старые `1.5.17-debug`/`1.5.17-github` подписаны тестовым ключом: перед первым переходом на `1.5.18-beta` их потребуется удалить. Это одноразовая миграция; последующие обновления будут устанавливаться поверх текущей версии.
+
+SHA-256 сертификата постоянной подписи:
+
+```text
+80:A5:29:FB:8D:53:63:02:B7:6C:27:2B:DF:99:01:EE:12:86:20:84:5E:0A:A1:2A:B4:9B:71:6A:E9:14:BB:9E
+```
+
+## Документация
+
+- [Пошаговая установка, обновление, удаление и откат](docs/INSTALL.md)
+- [Решение типовых проблем](docs/TROUBLESHOOTING.md)
+- [Зачем приложению нужны разрешения Android](docs/PERMISSIONS.md)
+- [Политика приватности](PRIVACY.md)
+- [Сторонние приложения и зеркала](THIRD_PARTY_APPS.md)
+- [Получение поддержки](SUPPORT.md)
 
 ## Галерея
 
@@ -64,7 +92,7 @@
 
 ## Сборка из исходников
 
-Требуются JDK 17+ и Android SDK Platform 30.
+Требуются JDK 17 и Android SDK Platform 30.
 
 ```powershell
 Copy-Item local.properties.example local.properties
@@ -92,4 +120,3 @@ cp local.properties.example local.properties
 ## Лицензия
 
 Исходный код AlikDrone Hub распространяется по лицензии [GNU GPL-3.0](LICENSE). Названия и товарные знаки DJI и сторонних приложений принадлежат их владельцам. Сторонние APK/XAPK не входят в состав репозитория и не распространяются по GPL вместе с Hub.
-

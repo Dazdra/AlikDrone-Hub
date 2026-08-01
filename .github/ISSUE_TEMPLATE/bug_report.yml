@@ -19,7 +19,7 @@ body:
     id: version
     attributes:
       label: Версия AlikDrone Hub
-      placeholder: 1.5.17-github
+      placeholder: 1.5.18-beta
     validations:
       required: true
   - type: textarea
@@ -41,4 +41,3 @@ body:
       options:
         - label: Я проверил вложения и удалил личные данные.
           required: true
-
