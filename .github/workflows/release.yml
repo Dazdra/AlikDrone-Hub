@@ -118,10 +118,16 @@ jobs:
             exit 1
           fi
 
-          signature_report="$("${apksigner_bin}" verify --verbose --print-certs "${apk_input}")"
-          signer_sha256="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' <<< "${signature_report}" | tr -d ':' | tr '[:upper:]' '[:lower:]' | head -n 1)"
+          signature_report="$("${apksigner_bin}" verify --verbose --print-certs "${apk_input}" 2>&1)"
+          signer_sha256="$(
+            awk -F ': ' 'tolower($0) ~ /certificate sha-256 digest/ { print $NF; exit }' \
+              <<< "${signature_report}" \
+              | tr -d '[:space:]:' \
+              | tr '[:upper:]' '[:lower:]'
+          )"
           expected_signer_sha256="80a529fb8d536302b76c272bdf9901ee128620845e0aa12ab49b716ae914bb9e"
           if [[ "${signer_sha256}" != "${expected_signer_sha256}" ]]; then
+            printf '%s\n' "${signature_report}"
             echo "::error::Unexpected APK signing certificate: ${signer_sha256}"
             exit 1
           fi
