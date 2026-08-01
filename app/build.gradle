@@ -19,8 +19,8 @@ android {
         applicationId "ru.alikdrone.hub"
         minSdk 23
         targetSdk 30
-        versionCode 32
-        versionName "1.5.17"
+        versionCode 33
+        versionName "1.5.18"
     }
 
     if (hasReleaseKeystore) {
@@ -51,7 +51,7 @@ android {
         }
         github {
             initWith release
-            versionNameSuffix "-github"
+            versionNameSuffix "-beta"
             // The public APK remains installable for local verification even
             // when the private release keystore is intentionally unavailable.
             signingConfig hasReleaseKeystore
