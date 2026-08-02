@@ -4,7 +4,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/Dazdra/AlikDrone-Hub?include_prereleases&label=BETA)](https://github.com/Dazdra/AlikDrone-Hub/releases)
 [![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 
-**[Скачать APK](https://github.com/Dazdra/AlikDrone-Hub/releases/tag/v1.5.18-beta) · [Установка](docs/INSTALL.md) · [Решение проблем](docs/TROUBLESHOOTING.md) · [Разрешения](docs/PERMISSIONS.md) · [Поддержка](SUPPORT.md)**
+**[Скачать APK](https://github.com/Dazdra/AlikDrone-Hub/releases/tag/v1.5.19-beta) · [Установка](docs/INSTALL.md) · [Решение проблем](docs/TROUBLESHOOTING.md) · [Разрешения](docs/PERMISSIONS.md) · [Поддержка](SUPPORT.md)**
 
 **AlikDrone Hub** — бесплатный центр приложений, Taskbar и инструментов пилота для пультов DJI на Android. Работает без root, не изменяет DJI Fly и передаёт установку штатному Android Package Installer с обязательным подтверждением пользователя.
 
@@ -32,7 +32,7 @@
 
 ## Скачать и установить
 
-Обычному пользователю нужен файл **`AlikDrone-Hub-1.5.18-beta.apk`** из [релиза v1.5.18-beta](https://github.com/Dazdra/AlikDrone-Hub/releases/tag/v1.5.18-beta). Файлы `Source code` и `*-source.zip` предназначены для разработчиков и на пульт не устанавливаются.
+Обычному пользователю нужен файл **`AlikDrone-Hub-1.5.19-beta.apk`** из [релиза v1.5.19-beta](https://github.com/Dazdra/AlikDrone-Hub/releases/tag/v1.5.19-beta). Файлы `Source code` и `*-source.zip` предназначены для разработчиков и на пульт не устанавливаются.
 
 ### Если установка APK на пульте уже работает
 
@@ -48,7 +48,7 @@
 
 Системный установщик не является частью этого GPL-репозитория. Полный порядок действий, разрешения Android и проверка результата описаны в **[пошаговой инструкции](docs/INSTALL.md)** и на [странице AlikDrone Hub](https://alik-drone.ru/hub/).
 
-Начиная с `1.5.18-beta`, публичные релизы подписываются постоянным ключом AlikDrone Hub. Старые `1.5.17-debug`/`1.5.17-github` подписаны тестовым ключом: перед первым переходом на `1.5.18-beta` их потребуется удалить. Это одноразовая миграция; последующие обновления будут устанавливаться поверх текущей версии.
+Начиная с `1.5.18-beta`, публичные релизы подписываются постоянным ключом AlikDrone Hub. Старые `1.5.17-debug`/`1.5.17-github` подписаны тестовым ключом: перед первым переходом на `1.5.18-beta` или более новую версию их потребуется удалить. Это одноразовая миграция; `1.5.19-beta` устанавливается поверх `1.5.18-beta` как обычное обновление.
 
 SHA-256 сертификата постоянной подписи:
 

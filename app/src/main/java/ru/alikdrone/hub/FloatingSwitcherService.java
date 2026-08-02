@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.UserManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -126,7 +127,7 @@ public final class FloatingSwitcherService extends Service {
     private boolean restoreRecoveryArmed;
     private boolean attachmentRecheckScheduled;
     private boolean packageReceiverRegistered;
-    private boolean firstStartCommand = true;
+    private boolean targetsRequestedWhileUserUnlocked;
     private Drawable cachedHubIcon;
     private volatile boolean destroyed;
     private final Object targetRefreshLock = new Object();
@@ -221,12 +222,14 @@ public final class FloatingSwitcherService extends Service {
         }
         registerPackageChangeReceiver();
         cachedHubIcon = loadHubIcon();
+        targetsRequestedWhileUserUnlocked = isUserUnlockedForDiscovery();
         requestTargetRefresh();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null && ACTION_STOP.equals(intent.getAction())) {
+        String action = intent == null ? null : intent.getAction();
+        if (ACTION_STOP.equals(action)) {
             SwitcherController.setEnabled(this, false);
             stopSelf();
             return START_NOT_STICKY;
@@ -265,24 +268,55 @@ public final class FloatingSwitcherService extends Service {
             cancelAttachmentRecheck();
             markAttachmentHealthy();
         }
-        if (intent != null
-                && ACTION_RELOAD_CONFIGURATION.equals(intent.getAction())) {
+        if (ACTION_RELOAD_CONFIGURATION.equals(action)) {
             reloadSavedConfiguration();
         }
-        if (intent != null && ACTION_HEALTH_CHECK.equals(intent.getAction())) {
+        if (ACTION_HEALTH_CHECK.equals(action)) {
             // The periodic watchdog only verifies/re-attaches the overlay.
             // Installed applications cannot change without a package
             // broadcast, so a healthy check must not decode every icon again.
-            firstStartCommand = false;
             return START_STICKY;
         }
-        if (firstStartCommand) {
-            firstStartCommand = false;
-        } else if (intent != null
-                && ACTION_REFRESH_TARGETS.equals(intent.getAction())) {
+        boolean userUnlocked = isUserUnlockedForDiscovery();
+        if (shouldRefreshTargetsForAction(
+                action,
+                targetsRequestedWhileUserUnlocked,
+                userUnlocked
+        )) {
+            if (userUnlocked) {
+                targetsRequestedWhileUserUnlocked = true;
+            }
             requestTargetRefresh();
         }
         return START_STICKY;
+    }
+
+    /**
+     * A reload can arrive after {@code USER_UNLOCKED}. The service may have
+     * first scanned applications during Direct Boot, when Android exposes only
+     * direct-boot-aware launcher components, so reloading must also replace
+     * that incomplete snapshot. Health checks deliberately stay lightweight.
+     */
+    static boolean shouldRefreshTargetsForAction(
+            String action,
+            boolean targetsRequestedWhileUserUnlocked,
+            boolean userUnlocked
+    ) {
+        if (ACTION_REFRESH_TARGETS.equals(action)) {
+            return true;
+        }
+        return ACTION_RELOAD_CONFIGURATION.equals(action)
+                && userUnlocked
+                && !targetsRequestedWhileUserUnlocked;
+    }
+
+    private boolean isUserUnlockedForDiscovery() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            return true;
+        }
+        UserManager userManager =
+                (UserManager) getSystemService(Context.USER_SERVICE);
+        return userManager == null || userManager.isUserUnlocked();
     }
 
     private void reloadSavedConfiguration() {
