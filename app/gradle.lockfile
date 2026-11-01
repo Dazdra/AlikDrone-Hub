@@ -1,6 +1,7 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
+# To regenerate this file, run: ./gradlew :app:dependencies --write-locks
 androidx.test.espresso:espresso-idling-resource:3.6.1=debugUnitTestRuntimeClasspath,githubUnitTestRuntimeClasspath,releaseUnitTestRuntimeClasspath
 androidx.test:monitor:1.7.1=debugUnitTestCompileClasspath,debugUnitTestRuntimeClasspath,githubUnitTestCompileClasspath,githubUnitTestRuntimeClasspath,releaseUnitTestCompileClasspath,releaseUnitTestRuntimeClasspath
 com.almworks.sqlite4java:sqlite4java:1.0.392=debugUnitTestCompileClasspath,debugUnitTestRuntimeClasspath,githubUnitTestCompileClasspath,githubUnitTestRuntimeClasspath,releaseUnitTestCompileClasspath,releaseUnitTestRuntimeClasspath
